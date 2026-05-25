@@ -1,27 +1,22 @@
-<script>
-    const LIFF_ID = "2010179102-Ba4IjCTo";
-
-    async function init() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        
-        document.getElementById("name").textContent = "LIFF初期化OK";
-        document.getElementById("message").textContent = "ログイン状態: " + liff.isLoggedIn();
-        
-        if (!liff.isLoggedIn()) {
-          document.getElementById("message").textContent = "ログインしていません。タップしてログイン";
-          document.querySelector(".card").onclick = () => liff.login();
-        } else {
-          const profile = await liff.getProfile();
-          document.getElementById("name").textContent = "こんにちは、" + profile.displayName + "さん！";
-          document.getElementById("avatar").src = profile.pictureUrl;
-          document.getElementById("avatar").style.display = "block";
-          document.getElementById("message").textContent = "LINEミニアプリへようこそ 🎉";
-        }
-      } catch(err) {
-        document.getElementById("name").textContent = "エラー: " + err.message;
-      }
-    }
-
-    init();
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>テスト</title>
+</head>
+<body>
+  <h1>表示テスト成功！</h1>
+  <p id="result">読み込み中...</p>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    liff.init({ liffId: "2010179102-Ba4IjCTo" })
+      .then(() => {
+        document.getElementById("result").textContent = 
+          "LIFF OK / ログイン: " + liff.isLoggedIn();
+      })
+      .catch(e => {
+        document.getElementById("result").textContent = "エラー: " + e.message;
+      });
   </script>
+</body>
+</html>
