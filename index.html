@@ -17,8 +17,11 @@
     <img id="avatar" src="" alt="アイコン" style="display:none">
     <h1 id="name">読み込み中...</h1>
     <p id="message"></p>
+    <button id="sendBtn" style="display:none; margin-top:16px; background:#06C755; color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; cursor:pointer;">
+      メッセージを送る
+    </button>
   </div>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     liff.init({ liffId: "2010179102-Ba4IjCTo" })
       .then(() => {
@@ -30,10 +33,32 @@
       })
       .then(profile => {
         if (!profile) return;
+
+        // プロフィール表示
         document.getElementById("name").textContent = "こんにちは、" + profile.displayName + "さん！";
         document.getElementById("avatar").src = profile.pictureUrl;
         document.getElementById("avatar").style.display = "block";
-        document.getElementById("message").textContent = "LINEミニアプリへようこそ 🎉";
+        document.getElementById("message").textContent = "下のボタンを押してみてください";
+
+        // ボタンを表示
+        const btn = document.getElementById("sendBtn");
+        btn.style.display = "block";
+
+        // ボタンをタップしたときの処理
+        btn.addEventListener("click", () => {
+          liff.sendMessages([
+            {
+              type: "text",
+              text: "LINEミニアプリを使いました！🎉"
+            }
+          ])
+          .then(() => {
+            document.getElementById("message").textContent = "メッセージを送りました！";
+          })
+          .catch(err => {
+            document.getElementById("message").textContent = "エラー: " + err.message;
+          });
+        });
       })
       .catch(err => {
         document.getElementById("name").textContent = "エラー: " + err.message;
