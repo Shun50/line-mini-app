@@ -3,34 +3,106 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINE Mini App</title>
+  <title>コート予約</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f0f0f0; }
-    .card { background: white; border-radius: 16px; padding: 32px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 80%; max-width: 400px; }
-    img { border-radius: 50%; width: 80px; height: 80px; margin-bottom: 16px; }
-    h1 { color: #06C755; font-size: 20px; }
-    p { color: #555; font-size: 14px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #f0f0f0; min-height: 100vh; }
+    
+    /* 各画面の共通スタイル */
+    .screen { display: none; padding: 24px 16px; }
+    .screen.active { display: block; }
+
+    /* カード */
+    .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    /* ヘッダー */
+    .header { background: #06C755; color: white; padding: 16px; text-align: center; font-size: 18px; font-weight: bold; }
+
+    /* プロフィール */
+    .profile { display: flex; align-items: center; gap: 12px; }
+    .profile img { width: 50px; height: 50px; border-radius: 50%; }
+    .profile-name { font-size: 16px; font-weight: bold; }
+    .profile-sub { font-size: 12px; color: #999; }
+
+    /* ボタン */
+    .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; margin-bottom: 12px; text-align: center; }
+    .btn-green { background: #06C755; color: white; }
+    .btn-gray { background: #eee; color: #333; }
+
+    /* コート一覧 */
+    .court-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+    .court-name { font-size: 16px; font-weight: bold; }
+    .court-info { font-size: 12px; color: #999; margin-top: 4px; }
+    .court-status { font-size: 12px; color: #06C755; font-weight: bold; }
+
+    /* セクションタイトル */
+    .section-title { font-size: 14px; color: #999; margin-bottom: 12px; }
+    h2 { font-size: 18px; margin-bottom: 16px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <img id="avatar" src="" alt="アイコン" style="display:none">
-    <h1 id="name">読み込み中...</h1>
-    <p id="message"></p>
-    <button id="sendBtn" style="display:none; margin-top:16px; background:#06C755; color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; cursor:pointer; width:100%;">
-      トークにメッセージを送る
-    </button>
-    <button id="shareBtn" style="display:none; margin-top:12px; background:#00B900; color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; cursor:pointer; width:100%;">
-      友だちにシェアする
-    </button>
-    <button id="scanBtn" style="display:none; margin-top:12px; background:#333; color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; cursor:pointer; width:100%;">
-      QRコードを読み取る
-    </button>
-    <p id="scanResult" style="color:#333; font-size:14px; margin-top:12px; word-break:break-all;"></p>
-    <p id="status" style="color:#999; font-size:12px; margin-top:8px;"></p>
+
+  <!-- ヘッダー（全画面共通） -->
+  <div class="header">🏸 コート予約システム</div>
+
+  <!-- 画面①：トップ画面 -->
+  <div id="screen-top" class="screen active">
+    <div class="card" style="margin-top:16px;">
+      <div class="profile">
+        <img id="avatar" src="https://via.placeholder.com/50" alt="アイコン">
+        <div>
+          <div class="profile-name" id="name">読み込み中...</div>
+          <div class="profile-sub">会員番号：M-00123</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">メニュー</p>
+      <button class="btn btn-green" onclick="showScreen('screen-courts')">🎾 コートを予約する</button>
+      <button class="btn btn-gray" onclick="alert('準備中です')">📋 予約履歴を見る</button>
+      <button class="btn btn-gray" onclick="alert('準備中です')">👤 会員情報</button>
+    </div>
   </div>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <!-- 画面②：コート選択画面 -->
+  <div id="screen-courts" class="screen">
+    <div style="margin-top:16px;">
+      <h2>コートを選んでください</h2>
+      <p class="section-title">本日の空き状況</p>
+
+      <div class="court-card" onclick="selectCourt('Aコート')">
+        <div>
+          <div class="court-name">🎾 Aコート</div>
+          <div class="court-info">屋内 / 硬式対応</div>
+        </div>
+        <div class="court-status">空きあり</div>
+      </div>
+
+      <div class="court-card" onclick="selectCourt('Bコート')">
+        <div>
+          <div class="court-name">🎾 Bコート</div>
+          <div class="court-info">屋内 / 軟式対応</div>
+        </div>
+        <div class="court-status">空きあり</div>
+      </div>
+
+      <div class="court-card" style="opacity:0.4;">
+        <div>
+          <div class="court-name">🎾 Cコート</div>
+          <div class="court-info">屋外 / 硬式対応</div>
+        </div>
+        <div style="font-size:12px; color:#f00; font-weight:bold;">満席</div>
+      </div>
+
+      <button class="btn btn-gray" onclick="showScreen('screen-top')">← 戻る</button>
+    </div>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
+    // LIFF初期化
     liff.init({ liffId: "2010179102-Ba4IjCTo" })
       .then(() => {
         if (!liff.isLoggedIn()) {
@@ -41,76 +113,24 @@
       })
       .then(profile => {
         if (!profile) return;
-
-        // プロフィール表示
-        document.getElementById("name").textContent = "こんにちは、" + profile.displayName + "さん！";
+        document.getElementById("name").textContent = profile.displayName;
         document.getElementById("avatar").src = profile.pictureUrl;
-        document.getElementById("avatar").style.display = "block";
-        document.getElementById("message").textContent = "ボタンを押してみてください";
-
-        // ボタンを表示
-        document.getElementById("sendBtn").style.display = "block";
-        document.getElementById("shareBtn").style.display = "block";
-
-        // STEP1：トークにメッセージを送る
-        document.getElementById("sendBtn").addEventListener("click", () => {
-          liff.sendMessages([
-            {
-              type: "text",
-              text: "LINEミニアプリを使いました！🎉"
-            }
-          ])
-          .then(() => {
-            document.getElementById("status").textContent = "✅ メッセージを送りました！";
-          })
-          .catch(err => {
-            document.getElementById("status").textContent = "❌ エラー: " + err.message;
-          });
-        });
-
-        // STEP2：友だちにシェアする
-        document.getElementById("shareBtn").addEventListener("click", () => {
-          if (!liff.isApiAvailable("shareTargetPicker")) {
-            document.getElementById("status").textContent = "❌ この環境ではシェアできません";
-            return;
-          }
-          liff.shareTargetPicker([
-            {
-              type: "text",
-              text: "このLINEミニアプリ、使ってみて！\nhttps://miniapp.line.me/2010179102-Ba4IjCTo"
-            }
-          ])
-          .then(res => {
-            if (res) {
-              document.getElementById("status").textContent = "✅ シェアしました！";
-            } else {
-              document.getElementById("status").textContent = "シェアをキャンセルしました";
-            }
-          })
-          .catch(err => {
-            document.getElementById("status").textContent = "❌ エラー: " + err.message;
-          });
-        });
       })
       .catch(err => {
         document.getElementById("name").textContent = "エラー: " + err.message;
       });
-        // STEP3：QRコードを読み取る
-            document.getElementById("scanBtn").style.display = "block";
-    
-            document.getElementById("scanBtn").addEventListener("click", async () => {
-              if (!liff.isApiAvailable("scanCodeV2")) {
-                document.getElementById("status").textContent = "❌ この環境ではQRスキャンできません";
-                return;
-              }
-              try {
-                const result = await liff.scanCodeV2();
-                document.getElementById("scanResult").textContent = "📷 読み取り結果: " + result.value;
-                document.getElementById("status").textContent = "✅ スキャン成功！";
-              } catch(err) {
-                document.getElementById("status").textContent = "❌ エラー: " + err.message;
-              }
-            });
+
+    // 画面を切り替える関数
+    // 全画面を隠してから、指定した画面だけ表示する
+    function showScreen(screenId) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(screenId).classList.add("active");
+    }
+
+    // コートを選択したときの処理
+    function selectCourt(courtName) {
+      alert(courtName + "を選択しました！\n※次のステップで日時選択を実装します");
+    }
   </script>
 </body>
 </html>
