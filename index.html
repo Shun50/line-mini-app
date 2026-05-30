@@ -7,128 +7,258 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f0f0f0; min-height: 100vh; }
-    .screen { display: none; padding: 24px 16px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f7f7f7; min-height: 100vh; color: #1a1a1a; }
+
+    .screen { display: none; padding: 16px; padding-bottom: 40px; }
     .screen.active { display: block; }
-    .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-    .header { background: #06C755; color: white; padding: 16px; text-align: center; font-size: 18px; font-weight: bold; }
-    .profile { display: flex; align-items: center; gap: 12px; }
-    .profile img { width: 50px; height: 50px; border-radius: 50%; }
-    .profile-name { font-size: 16px; font-weight: bold; }
-    .profile-sub { font-size: 12px; color: #999; }
-    .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; margin-bottom: 12px; text-align: center; }
-    .btn-green { background: #06C755; color: white; }
-    .btn-gray { background: #eee; color: #333; }
-    .court-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
-    .court-name { font-size: 16px; font-weight: bold; }
-    .court-info { font-size: 12px; color: #999; margin-top: 4px; }
-    .court-status { font-size: 12px; color: #06C755; font-weight: bold; }
-    .section-title { font-size: 14px; color: #999; margin-bottom: 12px; }
-    h2 { font-size: 18px; margin-bottom: 16px; }
+
+    /* ヘッダー */
+    .header { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+    .header-logo { width: 8px; height: 24px; background: #06C755; border-radius: 4px; }
+    .header-title { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
+
+    /* カード */
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+
+    /* プロフィール */
+    .profile { display: flex; align-items: center; gap: 14px; }
+    .profile img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+    .profile-name { font-size: 16px; font-weight: 600; }
+    .profile-sub { font-size: 12px; color: #aaa; margin-top: 2px; letter-spacing: 0.05em; }
+
+    /* ボタン */
+    .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 8px; text-align: center; letter-spacing: 0.02em; transition: opacity 0.15s; }
+    .btn:active { opacity: 0.7; }
+    .btn-primary { background: #06C755; color: white; }
+    .btn-secondary { background: #f0f0f0; color: #444; }
+    .btn-outline { background: white; color: #06C755; border: 1.5px solid #06C755; }
+
+    /* メニューリスト */
+    .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-item-label { font-size: 15px; font-weight: 500; }
+    .menu-item-arrow { color: #ccc; font-size: 18px; }
+    .menu-item-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+    /* コート一覧 */
+    .court-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+    .court-item:last-child { border-bottom: none; }
+    .court-item.disabled { opacity: 0.35; pointer-events: none; }
+    .court-item-name { font-size: 15px; font-weight: 600; }
+    .court-item-info { font-size: 12px; color: #aaa; margin-top: 3px; }
+    .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+    .badge-available { background: #e8f9ee; color: #06C755; }
+    .badge-full { background: #fef0f0; color: #e53935; }
+
+    /* セクションラベル */
+    .section-label { font-size: 11px; font-weight: 600; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+
+    /* 日付・時間ボタン */
+    .date-btn { display: block; width: 100%; padding: 13px; border: 1.5px solid #e8e8e8; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; margin-bottom: 8px; text-align: left; color: #1a1a1a; transition: all 0.15s; }
+    .date-btn.selected { border-color: #06C755; background: #f0fbf4; color: #06C755; font-weight: 600; }
+
+    .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+    .time-btn { padding: 10px 4px; border: 1.5px solid #e8e8e8; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; color: #1a1a1a; transition: all 0.15s; }
+    .time-btn.selected { border-color: #06C755; background: #f0fbf4; color: #06C755; font-weight: 600; }
+
+    /* 確認画面 */
+    .confirm-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid #f5f5f5; }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-label { font-size: 13px; color: #aaa; }
+    .confirm-value { font-size: 14px; font-weight: 600; }
+
+    /* 完了画面 */
+    .complete-mark { width: 64px; height: 64px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .complete-mark svg { width: 32px; height: 32px; stroke: white; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ページタイトル */
+    .page-title { font-size: 20px; font-weight: 700; margin: 20px 0 4px; }
+    .page-sub { font-size: 13px; color: #aaa; margin-bottom: 20px; }
+
+    /* info box */
+    .info-box { background: #f0fbf4; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+    .info-box p { font-size: 13px; color: #555; line-height: 1.6; }
   </style>
 </head>
 <body>
 
   <!-- ヘッダー -->
-  <div class="header">🏸 コート予約システム</div>
+  <div class="header">
+    <div class="header-logo"></div>
+    <div class="header-title">コート予約</div>
+  </div>
 
   <!-- 画面①：トップ画面 -->
   <div id="screen-top" class="screen active">
     <div class="card" style="margin-top:16px;">
       <div class="profile">
-        <img id="avatar" src="https://via.placeholder.com/50" alt="アイコン">
+        <img id="avatar" src="https://via.placeholder.com/48" alt="">
         <div>
           <div class="profile-name" id="name">読み込み中...</div>
-          <div class="profile-sub">会員番号：M-00123</div>
+          <div class="profile-sub">MEMBER NO. M-00123</div>
         </div>
       </div>
     </div>
+
     <div class="card">
-      <p class="section-title">メニュー</p>
-      <button class="btn btn-green" onclick="showScreen('screen-courts')">🎾 コートを予約する</button>
-      <button class="btn btn-gray" onclick="alert('準備中です')">📋 予約履歴を見る</button>
-      <button class="btn btn-gray" onclick="alert('準備中です')">👤 会員情報</button>
+      <div class="section-label">メニュー</div>
+      <div class="menu-item" onclick="showScreen('screen-courts')">
+        <div>
+          <div class="menu-item-label">コートを予約する</div>
+          <div class="menu-item-sub">空き状況を確認して予約</div>
+        </div>
+        <div class="menu-item-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="alert('準備中です')">
+        <div>
+          <div class="menu-item-label">予約履歴</div>
+          <div class="menu-item-sub">過去の予約を確認</div>
+        </div>
+        <div class="menu-item-arrow">›</div>
+      </div>
+      <div class="menu-item" onclick="alert('準備中です')">
+        <div>
+          <div class="menu-item-label">会員情報</div>
+          <div class="menu-item-sub">登録情報の確認・変更</div>
+        </div>
+        <div class="menu-item-arrow">›</div>
+      </div>
     </div>
   </div>
 
   <!-- 画面②：コート選択画面 -->
   <div id="screen-courts" class="screen">
-    <div style="margin-top:16px;">
-      <h2>コートを選んでください</h2>
-      <p class="section-title">本日の空き状況</p>
-      <div class="court-card" onclick="selectCourt('Aコート')">
+    <div class="page-title">コートを選ぶ</div>
+    <div class="page-sub">本日の空き状況</div>
+
+    <div class="card">
+      <div class="court-item" onclick="selectCourt('A コート')">
         <div>
-          <div class="court-name">🎾 Aコート</div>
-          <div class="court-info">屋内 / 硬式対応</div>
+          <div class="court-item-name">A コート</div>
+          <div class="court-item-info">屋内 · 硬式対応</div>
         </div>
-        <div class="court-status">空きあり</div>
+        <span class="badge badge-available">空きあり</span>
       </div>
-      <div class="court-card" onclick="selectCourt('Bコート')">
+      <div class="court-item" onclick="selectCourt('B コート')">
         <div>
-          <div class="court-name">🎾 Bコート</div>
-          <div class="court-info">屋内 / 軟式対応</div>
+          <div class="court-item-name">B コート</div>
+          <div class="court-item-info">屋内 · 軟式対応</div>
         </div>
-        <div class="court-status">空きあり</div>
+        <span class="badge badge-available">空きあり</span>
       </div>
-      <div class="court-card" style="opacity:0.4;">
+      <div class="court-item disabled">
         <div>
-          <div class="court-name">🎾 Cコート</div>
-          <div class="court-info">屋外 / 硬式対応</div>
+          <div class="court-item-name">C コート</div>
+          <div class="court-item-info">屋外 · 硬式対応</div>
         </div>
-        <div style="font-size:12px; color:#f00; font-weight:bold;">満席</div>
+        <span class="badge badge-full">満席</span>
       </div>
-      <button class="btn btn-gray" onclick="showScreen('screen-top')">← 戻る</button>
     </div>
+
+    <button class="btn btn-secondary" onclick="showScreen('screen-top')">戻る</button>
   </div>
 
   <!-- 画面③：日時選択画面 -->
   <div id="screen-datetime" class="screen">
-    <div style="margin-top:16px;">
-      <h2>日時を選んでください</h2>
-      <div class="card">
-        <p class="section-title">選択中のコート</p>
-        <p style="font-weight:bold; font-size:16px;" id="selected-court-name"></p>
+    <div class="page-title">日時を選ぶ</div>
+    <div class="page-sub" id="selected-court-name"></div>
+
+    <div class="card">
+      <div class="section-label">日付</div>
+      <div id="date-buttons"></div>
+    </div>
+
+    <div class="card" id="time-section" style="display:none;">
+      <div class="section-label">開始時間</div>
+      <div class="time-grid" id="time-buttons">
+        <button class="time-btn" onclick="selectTime('09:00', this)">09:00</button>
+        <button class="time-btn" onclick="selectTime('10:00', this)">10:00</button>
+        <button class="time-btn" onclick="selectTime('11:00', this)">11:00</button>
+        <button class="time-btn" onclick="selectTime('12:00', this)">12:00</button>
+        <button class="time-btn" onclick="selectTime('13:00', this)">13:00</button>
+        <button class="time-btn" onclick="selectTime('14:00', this)">14:00</button>
+        <button class="time-btn" onclick="selectTime('15:00', this)">15:00</button>
+        <button class="time-btn" onclick="selectTime('16:00', this)">16:00</button>
+        <button class="time-btn" onclick="selectTime('17:00', this)">17:00</button>
+        <button class="time-btn" onclick="selectTime('18:00', this)">18:00</button>
+        <button class="time-btn" onclick="selectTime('19:00', this)">19:00</button>
+        <button class="time-btn" onclick="selectTime('20:00', this)">20:00</button>
       </div>
-      <div class="card">
-        <p class="section-title">日付を選ぶ</p>
-        <div id="date-buttons"></div>
+    </div>
+
+    <button id="confirm-btn" class="btn btn-primary" style="display:none;" onclick="showConfirm()">予約内容を確認する</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-courts')">戻る</button>
+  </div>
+
+  <!-- 画面④：予約確認画面 -->
+  <div id="screen-confirm" class="screen">
+    <div class="page-title">予約内容の確認</div>
+    <div class="page-sub">内容をご確認のうえ、確定してください</div>
+
+    <div class="card">
+      <div class="confirm-row">
+        <span class="confirm-label">コート</span>
+        <span class="confirm-value" id="confirm-court"></span>
       </div>
-      <div class="card" id="time-section" style="display:none;">
-        <p class="section-title">時間帯を選ぶ（1時間単位）</p>
-        <div id="time-buttons" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px;">
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('09:00', this)">09:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('10:00', this)">10:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('11:00', this)">11:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('12:00', this)">12:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('13:00', this)">13:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('14:00', this)">14:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('15:00', this)">15:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('16:00', this)">16:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('17:00', this)">17:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('18:00', this)">18:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('19:00', this)">19:00</button>
-          <button class="time-btn" style="padding:10px; border:none; border-radius:8px; background:#eee; cursor:pointer;" onclick="selectTime('20:00', this)">20:00</button>
+      <div class="confirm-row">
+        <span class="confirm-label">日付</span>
+        <span class="confirm-value" id="confirm-date"></span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label">時間</span>
+        <span class="confirm-value" id="confirm-time"></span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label">利用時間</span>
+        <span class="confirm-value">1時間</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <p>予約確定後、LINEのトークに予約確認メッセージが送信されます。受付時にご提示ください。</p>
+    </div>
+
+    <button class="btn btn-primary" onclick="confirmReservation()">予約を確定する</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-datetime')">戻る</button>
+  </div>
+
+  <!-- 画面⑤：完了画面 -->
+  <div id="screen-complete" class="screen">
+    <div class="card" style="margin-top:24px; text-align:center; padding:40px 24px;">
+      <div class="complete-mark">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <div style="font-size:20px; font-weight:700; margin-bottom:8px;">予約完了</div>
+      <div style="font-size:13px; color:#aaa; margin-bottom:32px;">LINEのトークに予約確認を送信しました</div>
+
+      <div style="background:#f7f7f7; border-radius:10px; padding:16px; text-align:left; margin-bottom:32px;">
+        <div class="confirm-row">
+          <span class="confirm-label">コート</span>
+          <span class="confirm-value" id="complete-court"></span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">日付</span>
+          <span class="confirm-value" id="complete-date"></span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-label">時間</span>
+          <span class="confirm-value" id="complete-time"></span>
         </div>
       </div>
-      <button id="confirm-btn" class="btn btn-green" style="display:none;" onclick="showConfirm()">この内容で予約する →</button>
-      <button class="btn btn-gray" onclick="showScreen('screen-courts')">← 戻る</button>
+
+      <button class="btn btn-outline" onclick="showScreen('screen-top')">トップに戻る</button>
     </div>
   </div>
 
   <script>
-    // 選択中の情報を保存する変数
     let selectedCourt = "";
     let selectedDate = "";
     let selectedTime = "";
 
-    // LIFF初期化
     liff.init({ liffId: "2010179102-Ba4IjCTo" })
       .then(() => {
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        } else {
-          return liff.getProfile();
-        }
+        if (!liff.isLoggedIn()) { liff.login(); }
+        else { return liff.getProfile(); }
       })
       .then(profile => {
         if (!profile) return;
@@ -139,13 +269,12 @@
         document.getElementById("name").textContent = "エラー: " + err.message;
       });
 
-    // 画面を切り替える関数
     function showScreen(screenId) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       document.getElementById(screenId).classList.add("active");
+      window.scrollTo(0, 0);
     }
 
-    // コートを選択したときの処理
     function selectCourt(courtName) {
       selectedCourt = courtName;
       const dateContainer = document.getElementById("date-buttons");
@@ -160,42 +289,57 @@
         const label = i === 0 ? "今日" : i === 1 ? "明日" : "明後日";
         const dateStr = `${month}/${day}(${weekday})`;
         const btn = document.createElement("button");
-        btn.className = "btn btn-gray";
-        btn.textContent = `${label} ${dateStr}`;
+        btn.className = "date-btn";
+        btn.textContent = `${label}　${dateStr}`;
         btn.onclick = () => selectDate(dateStr, btn);
         dateContainer.appendChild(btn);
       }
+      document.getElementById("time-section").style.display = "none";
+      document.getElementById("confirm-btn").style.display = "none";
+      document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
       showScreen("screen-datetime");
       document.getElementById("selected-court-name").textContent = selectedCourt;
     }
 
-    // 日付を選択したときの処理
     function selectDate(dateStr, btnEl) {
       selectedDate = dateStr;
-      document.querySelectorAll("#date-buttons .btn").forEach(b => {
-        b.classList.remove("btn-green");
-        b.classList.add("btn-gray");
-      });
-      btnEl.classList.remove("btn-gray");
-      btnEl.classList.add("btn-green");
+      document.querySelectorAll("#date-buttons .date-btn").forEach(b => b.classList.remove("selected"));
+      btnEl.classList.add("selected");
       document.getElementById("time-section").style.display = "block";
     }
 
-    // 時間帯を選択したときの処理
     function selectTime(time, btnEl) {
       selectedTime = time;
-      document.querySelectorAll("#time-buttons .time-btn").forEach(b => {
-        b.style.background = "#eee";
-        b.style.color = "#333";
-      });
-      btnEl.style.background = "#06C755";
-      btnEl.style.color = "white";
+      document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
+      btnEl.classList.add("selected");
       document.getElementById("confirm-btn").style.display = "block";
     }
 
-    // 予約確認（次のステップで実装）
     function showConfirm() {
-      alert(`予約内容\nコート：${selectedCourt}\n日付：${selectedDate}\n時間：${selectedTime}\n\n※次のステップで確認画面を実装します`);
+      const endTime = (parseInt(selectedTime) + 1).toString().padStart(2, "0") + ":00";
+      document.getElementById("confirm-court").textContent = selectedCourt;
+      document.getElementById("confirm-date").textContent = selectedDate;
+      document.getElementById("confirm-time").textContent = selectedTime + " 〜 " + endTime;
+      showScreen("screen-confirm");
+    }
+
+    function confirmReservation() {
+      const endTime = (parseInt(selectedTime) + 1).toString().padStart(2, "0") + ":00";
+      liff.sendMessages([
+        {
+          type: "text",
+          text: `【予約確認】\n\nコート：${selectedCourt}\n日付：${selectedDate}\n時間：${selectedTime} 〜 ${endTime}\n利用時間：1時間\n\n受付にてこのメッセージをご提示ください。`
+        }
+      ])
+      .then(() => {
+        document.getElementById("complete-court").textContent = selectedCourt;
+        document.getElementById("complete-date").textContent = selectedDate;
+        document.getElementById("complete-time").textContent = selectedTime + " 〜 " + endTime;
+        showScreen("screen-complete");
+      })
+      .catch(err => {
+        alert("エラー: " + err.message + "\n\nトークルームからミニアプリを開いてください。");
+      });
     }
   </script>
 </body>
