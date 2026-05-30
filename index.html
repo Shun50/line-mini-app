@@ -23,7 +23,11 @@
     <button id="shareBtn" style="display:none; margin-top:12px; background:#00B900; color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; cursor:pointer; width:100%;">
       友だちにシェアする
     </button>
-    <p id="status" style="color:#999; font-size:12px; margin-top:12px;"></p>
+    <button id="scanBtn" style="display:none; margin-top:12px; background:#333; color:white; border:none; border-radius:8px; padding:12px 24px; font-size:16px; cursor:pointer; width:100%;">
+      QRコードを読み取る
+    </button>
+    <p id="scanResult" style="color:#333; font-size:14px; margin-top:12px; word-break:break-all;"></p>
+    <p id="status" style="color:#999; font-size:12px; margin-top:8px;"></p>
   </div>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
@@ -91,6 +95,22 @@
       .catch(err => {
         document.getElementById("name").textContent = "エラー: " + err.message;
       });
+        // STEP3：QRコードを読み取る
+            document.getElementById("scanBtn").style.display = "block";
+    
+            document.getElementById("scanBtn").addEventListener("click", async () => {
+              if (!liff.isApiAvailable("scanCodeV2")) {
+                document.getElementById("status").textContent = "❌ この環境ではQRスキャンできません";
+                return;
+              }
+              try {
+                const result = await liff.scanCodeV2();
+                document.getElementById("scanResult").textContent = "📷 読み取り結果: " + result.value;
+                document.getElementById("status").textContent = "✅ スキャン成功！";
+              } catch(err) {
+                document.getElementById("status").textContent = "❌ エラー: " + err.message;
+              }
+            });
   </script>
 </body>
 </html>
