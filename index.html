@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>COURT HUB</title>
+  <title>コート予約システム - デモ</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,7 +12,6 @@
     .screen { display: none; padding: 16px; padding-bottom: 40px; }
     .screen.active { display: block; }
 
-    /* ヘッダー */
     .header { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
     .header-left { display: flex; align-items: center; gap: 10px; }
     .header-logo { width: 6px; height: 22px; background: #06C755; border-radius: 3px; }
@@ -20,35 +19,34 @@
     .header-sub { font-size: 10px; color: #aaa; letter-spacing: 0.08em; }
     .header-hours { font-size: 11px; color: #aaa; text-align: right; }
 
-    /* カード */
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 12px; }
 
-    /* プロフィール */
     .profile { display: flex; align-items: center; gap: 14px; }
     .profile img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
     .profile-name { font-size: 16px; font-weight: 600; }
     .profile-sub { font-size: 11px; color: #aaa; margin-top: 2px; letter-spacing: 0.05em; }
 
-    /* ボタン */
     .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 8px; text-align: center; letter-spacing: 0.02em; transition: opacity 0.15s; }
     .btn:active { opacity: 0.7; }
     .btn-primary { background: #06C755; color: white; }
     .btn-secondary { background: #f0f0f0; color: #444; }
     .btn-outline { background: white; color: #06C755; border: 1.5px solid #06C755; }
 
-    /* メニューリスト */
     .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
     .menu-item:last-child { border-bottom: none; }
     .menu-item-label { font-size: 15px; font-weight: 500; }
     .menu-item-arrow { color: #ccc; font-size: 18px; }
     .menu-item-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
 
-    /* お知らせバナー */
+    /* デモバナー */
+    .demo-banner { background: #fff8e1; border-left: 3px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
+    .demo-banner-title { font-size: 11px; font-weight: 700; color: #f59e0b; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .demo-banner-text { font-size: 12px; color: #666; line-height: 1.6; }
+
     .banner { background: #f0fbf4; border-left: 3px solid #06C755; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; }
     .banner-title { font-size: 12px; font-weight: 600; color: #06C755; margin-bottom: 4px; letter-spacing: 0.04em; }
     .banner-text { font-size: 12px; color: #555; line-height: 1.6; }
 
-    /* コート一覧 */
     .court-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
     .court-item:last-child { border-bottom: none; }
     .court-item.disabled { opacity: 0.35; pointer-events: none; }
@@ -60,10 +58,8 @@
     .badge-available { background: #e8f9ee; color: #06C755; }
     .badge-full { background: #fef0f0; color: #e53935; }
 
-    /* セクションラベル */
     .section-label { font-size: 11px; font-weight: 600; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
 
-    /* 日付・時間ボタン */
     .date-btn { display: block; width: 100%; padding: 13px; border: 1.5px solid #e8e8e8; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; margin-bottom: 8px; text-align: left; color: #1a1a1a; transition: all 0.15s; }
     .date-btn.selected { border-color: #06C755; background: #f0fbf4; color: #06C755; font-weight: 600; }
 
@@ -71,7 +67,6 @@
     .time-btn { padding: 10px 4px; border: 1.5px solid #e8e8e8; border-radius: 8px; font-size: 13px; background: white; cursor: pointer; color: #1a1a1a; transition: all 0.15s; }
     .time-btn.selected { border-color: #06C755; background: #f0fbf4; color: #06C755; font-weight: 600; }
 
-    /* 確認画面 */
     .confirm-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid #f5f5f5; }
     .confirm-row:last-child { border-bottom: none; }
     .confirm-label { font-size: 13px; color: #aaa; }
@@ -80,39 +75,79 @@
     .confirm-total-label { font-size: 14px; font-weight: 600; }
     .confirm-total-value { font-size: 20px; font-weight: 700; color: #06C755; }
 
-    /* 完了画面 */
     .complete-mark { width: 64px; height: 64px; background: #06C755; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
     .complete-mark svg { width: 32px; height: 32px; stroke: white; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ページタイトル */
     .page-title { font-size: 20px; font-weight: 700; margin: 20px 0 4px; }
     .page-sub { font-size: 13px; color: #aaa; margin-bottom: 20px; }
 
     .info-box { background: #f0fbf4; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
     .info-box p { font-size: 13px; color: #555; line-height: 1.6; }
 
-    /* 予約番号 */
     .reservation-number { font-size: 28px; font-weight: 700; letter-spacing: 0.1em; color: #1a1a1a; margin: 8px 0 4px; }
     .reservation-label { font-size: 11px; color: #aaa; letter-spacing: 0.06em; }
+
+    /* 営業用ウェルカム画面 */
+    .welcome-hero { background: #1a1a1a; border-radius: 12px; padding: 32px 24px; margin-bottom: 12px; color: white; text-align: center; }
+    .welcome-tag { font-size: 11px; font-weight: 600; color: #06C755; letter-spacing: 0.1em; margin-bottom: 12px; }
+    .welcome-title { font-size: 24px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+    .welcome-sub { font-size: 13px; color: #aaa; line-height: 1.6; }
+
+    .feature-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; }
+    .feature-dot { width: 6px; height: 6px; background: #06C755; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+    .feature-text { font-size: 13px; color: #444; line-height: 1.5; }
   </style>
 </head>
 <body>
 
-  <!-- ヘッダー -->
   <div class="header">
     <div class="header-left">
       <div class="header-logo"></div>
       <div>
-        <div class="header-name">COURT HUB</div>
-        <div class="header-sub">SPORTS FACILITY</div>
+        <div class="header-name" id="facility-name">貴施設名</div>
+        <div class="header-sub">COURT RESERVATION</div>
       </div>
     </div>
     <div class="header-hours">営業時間<br>9:00 〜 21:00</div>
   </div>
 
-  <!-- 画面①：トップ画面 -->
+  <!-- 画面①：ウェルカム／トップ画面 -->
   <div id="screen-top" class="screen active">
-    <div class="card" style="margin-top:16px;">
+
+    <div class="demo-banner" style="margin-top:16px;">
+      <div class="demo-banner-title">DEMO VERSION</div>
+      <div class="demo-banner-text">これはデモ画面です。実際の導入時は施設名・コート名・料金をカスタマイズします。</div>
+    </div>
+
+    <div class="welcome-hero">
+      <div class="welcome-tag">LINE MINI APP</div>
+      <div class="welcome-title">コート予約を<br>LINEだけで完結</div>
+      <div class="welcome-sub">アプリのダウンロード不要。<br>お客様のLINEからそのまま予約できます。</div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">導入メリット</div>
+      <div style="padding-top:4px;">
+        <div class="feature-row">
+          <div class="feature-dot"></div>
+          <div class="feature-text">電話予約をゼロに。受付業務のコストを削減できます。</div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-dot"></div>
+          <div class="feature-text">予約番号を自動発行。当日の受付がスムーズになります。</div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-dot"></div>
+          <div class="feature-text">LINEで予約確認を自動送信。キャンセル対応も楽になります。</div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-dot"></div>
+          <div class="feature-text">初期費用不要。月額費用のみで導入いただけます。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="profile">
         <img id="avatar" src="https://via.placeholder.com/48" alt="">
         <div>
@@ -120,11 +155,6 @@
           <div class="profile-sub">MEMBER NO. M-00123</div>
         </div>
       </div>
-    </div>
-
-    <div class="banner">
-      <div class="banner-title">お知らせ</div>
-      <div class="banner-text">毎週水曜日はメンテナンスのため、17:00以降のご利用はお休みとなります。</div>
     </div>
 
     <div class="card">
@@ -136,47 +166,19 @@
         </div>
         <div class="menu-item-arrow">›</div>
       </div>
-      <div class="menu-item" onclick="alert('準備中です')">
+      <div class="menu-item" onclick="alert('導入後に実装します')">
         <div>
           <div class="menu-item-label">予約履歴</div>
           <div class="menu-item-sub">過去の予約を確認</div>
         </div>
         <div class="menu-item-arrow">›</div>
       </div>
-      <div class="menu-item" onclick="alert('準備中です')">
+      <div class="menu-item" onclick="alert('導入後に実装します')">
         <div>
           <div class="menu-item-label">会員情報</div>
           <div class="menu-item-sub">登録情報の確認・変更</div>
         </div>
         <div class="menu-item-arrow">›</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-label">施設情報</div>
-      <div class="menu-item" style="cursor:default;">
-        <div>
-          <div class="menu-item-label">テニスコート（硬式）</div>
-          <div class="menu-item-sub">¥1,500 / 時間</div>
-        </div>
-      </div>
-      <div class="menu-item" style="cursor:default;">
-        <div>
-          <div class="menu-item-label">テニスコート（軟式）</div>
-          <div class="menu-item-sub">¥1,200 / 時間</div>
-        </div>
-      </div>
-      <div class="menu-item" style="cursor:default;">
-        <div>
-          <div class="menu-item-label">バドミントンコート</div>
-          <div class="menu-item-sub">¥800 / 時間</div>
-        </div>
-      </div>
-      <div class="menu-item" style="cursor:default;">
-        <div>
-          <div class="menu-item-label">フットサルコート</div>
-          <div class="menu-item-sub">¥3,000 / 時間</div>
-        </div>
       </div>
     </div>
   </div>
@@ -186,10 +188,15 @@
     <div class="page-title">コートを選ぶ</div>
     <div class="page-sub">本日の空き状況</div>
 
+    <div class="demo-banner">
+      <div class="demo-banner-title">DEMO</div>
+      <div class="demo-banner-text">実際の導入時はコート名・種目・料金を貴施設に合わせて設定します。</div>
+    </div>
+
     <div class="card">
-      <div class="court-item" onclick="selectCourt('コート A', 'テニス（硬式）', 1500)">
+      <div class="court-item" onclick="selectCourt('コート 1', 'テニス（硬式）', 1500)">
         <div>
-          <div class="court-item-name">コート A</div>
+          <div class="court-item-name">コート 1</div>
           <div class="court-item-info">テニス · 硬式対応</div>
         </div>
         <div class="court-item-right">
@@ -197,9 +204,9 @@
           <span class="badge badge-available">空きあり</span>
         </div>
       </div>
-      <div class="court-item" onclick="selectCourt('コート B', 'テニス（軟式）', 1200)">
+      <div class="court-item" onclick="selectCourt('コート 2', 'テニス（軟式）', 1200)">
         <div>
-          <div class="court-item-name">コート B</div>
+          <div class="court-item-name">コート 2</div>
           <div class="court-item-info">テニス · 軟式対応</div>
         </div>
         <div class="court-item-right">
@@ -207,9 +214,9 @@
           <span class="badge badge-available">空きあり</span>
         </div>
       </div>
-      <div class="court-item" onclick="selectCourt('コート C', 'バドミントン', 800)">
+      <div class="court-item" onclick="selectCourt('コート 3', 'バドミントン', 800)">
         <div>
-          <div class="court-item-name">コート C</div>
+          <div class="court-item-name">コート 3</div>
           <div class="court-item-info">バドミントン対応</div>
         </div>
         <div class="court-item-right">
@@ -219,7 +226,7 @@
       </div>
       <div class="court-item disabled">
         <div>
-          <div class="court-item-name">コート D</div>
+          <div class="court-item-name">コート 4</div>
           <div class="court-item-info">フットサル対応</div>
         </div>
         <div class="court-item-right">
@@ -310,10 +317,8 @@
       <div class="complete-mark">
         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </div>
-
       <div class="reservation-label">RESERVATION NO.</div>
       <div class="reservation-number" id="reservation-number"></div>
-
       <div style="font-size:13px; color:#aaa; margin: 16px 0 32px;">LINEのトークに予約確認を送信しました</div>
 
       <div style="background:#f7f7f7; border-radius:10px; padding:16px; text-align:left; margin-bottom:32px;">
@@ -424,12 +429,11 @@
 
     function confirmReservation() {
       const endTime = (parseInt(selectedTime) + 1).toString().padStart(2, "0") + ":00";
-      const reservationNo = "CH-" + Date.now().toString().slice(-6);
-
+      const reservationNo = "RSV-" + Date.now().toString().slice(-6);
       liff.sendMessages([
         {
           type: "text",
-          text: `【COURT HUB 予約確認】\n予約番号：${reservationNo}\n\nコート：${selectedCourt}\n種目：${selectedSport}\n日付：${selectedDate}\n時間：${selectedTime} 〜 ${endTime}\n料金：¥${selectedPrice.toLocaleString()}\n\n当日受付にてこのメッセージをご提示ください。\nCOURT HUB`
+          text: `【予約確認】\n予約番号：${reservationNo}\n\nコート：${selectedCourt}\n種目：${selectedSport}\n日付：${selectedDate}\n時間：${selectedTime} 〜 ${endTime}\n料金：¥${selectedPrice.toLocaleString()}\n\n当日受付にてこのメッセージをご提示ください。`
         }
       ])
       .then(() => {
